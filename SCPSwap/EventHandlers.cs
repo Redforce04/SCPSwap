@@ -116,9 +116,9 @@ namespace SCPSwap
 
 		public void OnConsoleCommand(SendingConsoleCommandEventArgs ev)
 		{
-			ev.Allow = false;
 			if (ev.Name.ToLower().Contains("scpswap"))
 			{
+				ev.Allow = false;
 				if (!isRoundStarted)
 				{
 					ev.ReturnMessage = "The round hasn't started yet!";
