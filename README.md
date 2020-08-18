@@ -15,10 +15,16 @@ Examples: `.scpswap 173`, `.scpswap peanut`
 *Note: As shown above, common aliases for SCPs can be used in place of numbers. A full list of these aliases ican be found [here](https://github.com/Cyanox62/SCPSwap/wiki/SCP-Role-IDs).*
 
 # Configs
+```yaml
+scp_swap:
+  is_enabled: true
+  display_start_message: true
+  swap_allow_new_scps: false
+  swap_timeout: 60
+  swap_request_timeout: 20
+  start_message_time: 15
+  display_message_text: <color=yellow><b>Did you know you can swap classes with other SCP's?</b></color> Simply type <color=orange>.scpswap (role number)</color> in your in-game console (not RA) to swap!
+  swap_blacklist:
+  - 10
+```
 
-| Config        | Type | Default | Description
-| :-------------: | :---------: | :---------: | :------ |
-| swap_blacklist | Integer List | 10 | The role IDs of SCPs that are not allowed to be swapped. A list of Role IDs can be found [here.](https://github.com/Cyanox62/SCPSwap/wiki/SCP-Role-IDs) |
-| swap_allow_new_scps | Boolean | False | Should players be allowed to swap to roles that are not spawned in. If a user requests to swap with a role that didn't spawn in this round it will just change the player to the specified role. |
-| swap_timeout | Float | 60 | The amount of time from the start of the round until swapping is no longer allowed. |
-| swap_request_timeout | Float | 20 | The amount of time before a swap request to another player times out. |

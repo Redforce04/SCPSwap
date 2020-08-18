@@ -3,12 +3,14 @@ using Exiled.Events.EventArgs;
 using MEC;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 
-namespace SCPSwap
+namespace ScpSwap
 {
 	public sealed class EventHandlers
 	{
+		// Riverrunner is the best, hehe
 		private Dictionary<Player, Player> ongoingReqs = new Dictionary<Player, Player>();
 
 		private List<CoroutineHandle> coroutines = new List<CoroutineHandle>();
@@ -16,6 +18,8 @@ namespace SCPSwap
 
 		private bool allowSwaps = false;
 		private bool isRoundStarted = false;
+
+		private StringBuilder listBuilder = new StringBuilder();
 
 		private Dictionary<string, RoleType> valid = new Dictionary<string, RoleType>()
 		{
@@ -88,6 +92,7 @@ namespace SCPSwap
 			allowSwaps = true;
 			isRoundStarted = true;
 			Timing.CallDelayed(plugin.Config.SwapTimeout, () => allowSwaps = false);
+			Timing.CallDelayed(1f, () => BroadcastMessage());
 		}
 
 		public void OnRoundRestart()
@@ -184,6 +189,19 @@ namespace SCPSwap
 								}
 								ev.ReturnMessage = "You do not have an outgoing swap request.";
 								break;
+							case "list":
+								listBuilder.AppendLine("Here are the available SCPs to swap (Some may be blacklisted):");
+								foreach (KeyValuePair<string, RoleType> kvp in valid)
+								{
+									listBuilder.Append(kvp.Key);
+									listBuilder.Append(" (");
+									listBuilder.Append((int)kvp.Value);
+									listBuilder.AppendLine(")");
+								}
+								string message = listBuilder.ToString();
+								listBuilder.Clear();
+								ev.ReturnMessage = message;
+								break;
 							default:
 								if (!valid.ContainsKey(ev.Arguments[0]))
 								{
@@ -239,6 +257,16 @@ namespace SCPSwap
 						ev.Color = "red";
 						break;
 				}
+			}
+		}
+
+		public void BroadcastMessage()
+		{
+			if (plugin.Config.DisplayStartMessage)
+			{
+				foreach (Player ply in Player.List)
+					if (ply.Role.IsSCP())
+						ply.Broadcast(plugin.Config.StartMessageTime, plugin.Config.DisplayMessageText);
 			}
 		}
 	}

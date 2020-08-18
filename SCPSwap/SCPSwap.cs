@@ -1,6 +1,6 @@
 ﻿using Exiled.API.Features;
 
-namespace SCPSwap
+namespace ScpSwap
 {
     public class ScpSwap : Plugin<Config>
     {
