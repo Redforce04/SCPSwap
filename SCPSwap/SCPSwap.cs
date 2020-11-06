@@ -1,32 +1,38 @@
-﻿using Exiled.API.Features;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using Exiled.API.Features;
+using Handlers = Exiled.Events.Handlers;
+using UnityEngine;
 
 namespace ScpSwap
 {
-    public class ScpSwap : Plugin<Config>
-    {
+	public class ScpSwap : Plugin<Config>
+	{
 		public EventHandlers Handler { get; private set; }
 		public override string Name => nameof(ScpSwap);
 		public override string Author => "Cyanox";
+		public override Version Version { get; } = new Version(2, 6, 1);
 
 		public ScpSwap() { }
 
 		public override void OnEnabled()
 		{
 			Handler = new EventHandlers(this);
-			Exiled.Events.Handlers.Server.WaitingForPlayers += Handler.OnWaitingForPlayers;
-			Exiled.Events.Handlers.Server.RoundStarted += Handler.OnRoundStart;
-			Exiled.Events.Handlers.Server.RoundEnded += Handler.OnRoundEnd;
-			Exiled.Events.Handlers.Server.RestartingRound += Handler.OnRoundRestart;
-			Exiled.Events.Handlers.Server.SendingConsoleCommand += Handler.OnConsoleCommand;
+			Handlers.Server.WaitingForPlayers += Handler.OnWaitingForPlayers;
+			Handlers.Server.RoundStarted += Handler.OnRoundStart;
+			Handlers.Server.RoundEnded += Handler.OnRoundEnd;
+			Handlers.Server.RestartingRound += Handler.OnRoundRestart;
+			Handlers.Server.SendingConsoleCommand += Handler.OnConsoleCommand;
 		}
 
 		public override void OnDisabled()
 		{
-			Exiled.Events.Handlers.Server.WaitingForPlayers -= Handler.OnWaitingForPlayers;
-			Exiled.Events.Handlers.Server.RoundStarted -= Handler.OnRoundStart;
-			Exiled.Events.Handlers.Server.RoundEnded -= Handler.OnRoundEnd;
-			Exiled.Events.Handlers.Server.RestartingRound -= Handler.OnRoundRestart;
-			Exiled.Events.Handlers.Server.SendingConsoleCommand -= Handler.OnConsoleCommand;
+			Handlers.Server.WaitingForPlayers -= Handler.OnWaitingForPlayers;
+			Handlers.Server.RoundStarted -= Handler.OnRoundStart;
+			Handlers.Server.RoundEnded -= Handler.OnRoundEnd;
+			Handlers.Server.RestartingRound -= Handler.OnRoundRestart;
+			Handlers.Server.SendingConsoleCommand -= Handler.OnConsoleCommand;
 			Handler = null;
 		}
 

@@ -8,42 +8,49 @@ using UnityEngine;
 
 namespace ScpSwap
 {
-	public sealed class EventHandlers
+	public class EventHandlers
 	{
 		// Riverrunner is the best, hehe
-		private Dictionary<Player, Player> ongoingReqs = new Dictionary<Player, Player>();
+		public static Dictionary<Player, Player> ongoingReqs = new Dictionary<Player, Player>();
 
-		private List<CoroutineHandle> coroutines = new List<CoroutineHandle>();
-		private Dictionary<Player, CoroutineHandle> reqCoroutines = new Dictionary<Player, CoroutineHandle>();
+		public static List<CoroutineHandle> coroutines = new List<CoroutineHandle>();
+		public static Dictionary<Player, CoroutineHandle> reqCoroutines = new Dictionary<Player, CoroutineHandle>();
 
-		private bool allowSwaps = false;
-		private bool isRoundStarted = false;
+		public static bool allowSwaps = false;
+		public static bool isRoundStarted = false;
 
 		private StringBuilder listBuilder = new StringBuilder();
 
-		private Dictionary<string, RoleType> valid = new Dictionary<string, RoleType>()
+		public static Dictionary<string, RoleType> valid = new Dictionary<string, RoleType>()
 		{
 			{"173", RoleType.Scp173},
 			{"peanut", RoleType.Scp173},
 			{"939", RoleType.Scp93953},
 			{"dog", RoleType.Scp93953},
 			{"079", RoleType.Scp079},
+			{"79", RoleType.Scp079},
 			{"computer", RoleType.Scp079},
 			{"106", RoleType.Scp106},
 			{"larry", RoleType.Scp106},
 			{"096", RoleType.Scp096},
+			{"96", RoleType.Scp096},
 			{"shyguy", RoleType.Scp096},
 			{"049", RoleType.Scp049},
+			{"49", RoleType.Scp049},
 			{"doctor", RoleType.Scp049},
 			{"0492", RoleType.Scp0492},
+			{"492", RoleType.Scp0492},
 			{"zombie", RoleType.Scp0492}
 		};
 
-		public ScpSwap plugin;
+		public static ScpSwap plugin;
 
-		public EventHandlers(ScpSwap plugin) => this.plugin = plugin;
+		public EventHandlers(ScpSwap pl)
+		{
+			plugin = pl;
+		}
 
-		private IEnumerator<float> SendRequest(Player source, Player dest)
+		public static IEnumerator<float> SendRequest(Player source, Player dest)
 		{
 			ongoingReqs.Add(source, dest);
 			dest.Broadcast(5, "<i>You have an SCP Swap request!\nCheck your console by pressing [`] or [~]</i>");
@@ -52,7 +59,7 @@ namespace ScpSwap
 			TimeoutRequest(source);
 		}
 
-		private void TimeoutRequest(Player source)
+		public static void TimeoutRequest(Player source)
 		{
 			if (ongoingReqs.ContainsKey(source))
 			{
@@ -63,7 +70,7 @@ namespace ScpSwap
 			}
 		}
 
-		private void PerformSwap(Player source, Player dest)
+		public static void PerformSwap(Player source, Player dest)
 		{
 			source.ReferenceHub.characterClassManager.TargetConsolePrint(source.ReferenceHub.scp079PlayerScript.connectionToClient, "Swap successful!", "green");
 
@@ -99,8 +106,10 @@ namespace ScpSwap
 		{
 			// fail safe
 			isRoundStarted = false;
-			Timing.KillCoroutines(coroutines);
-			Timing.KillCoroutines(reqCoroutines.Values);
+			foreach (CoroutineHandle hndl in coroutines)
+				Timing.KillCoroutines(hndl);
+			foreach (CoroutineHandle hndl in reqCoroutines.Values)
+				Timing.KillCoroutines(hndl);
 			coroutines.Clear();
 			reqCoroutines.Clear();
 		}
@@ -108,8 +117,10 @@ namespace ScpSwap
 		public void OnRoundEnd(RoundEndedEventArgs ev)
 		{
 			isRoundStarted = false;
-			Timing.KillCoroutines(coroutines);
-			Timing.KillCoroutines(reqCoroutines.Values);
+			foreach (CoroutineHandle hndl in coroutines)
+				Timing.KillCoroutines(hndl);
+			foreach (CoroutineHandle hndl in reqCoroutines.Values)
+				Timing.KillCoroutines(hndl);
 			coroutines.Clear();
 			reqCoroutines.Clear();
 		}
@@ -121,143 +132,7 @@ namespace ScpSwap
 
 		public void OnConsoleCommand(SendingConsoleCommandEventArgs ev)
 		{
-			if (ev.Name.ToLower().Contains("scpswap"))
-			{
-				ev.Allow = false;
-				if (!isRoundStarted)
-				{
-					ev.ReturnMessage = "The round hasn't started yet!";
-					ev.Color = "red";
-					return;
-				}
 
-				if (!(ev.Player.Team == Team.SCP))
-				{
-					ev.ReturnMessage = "You're not an SCP, why did you think that would work.";
-					ev.Color = "red";
-					return;
-				}
-
-				if (!allowSwaps)
-				{
-					ev.ReturnMessage = "SCP swap period has expired.";
-					ev.Color = "red";
-					return;
-				}
-
-				switch (ev.Arguments.Count)
-				{
-					case 1:
-						switch (ev.Arguments[0].ToLower())
-						{
-							case "yes":
-								Player swap = ongoingReqs.FirstOrDefault(x => x.Value == ev.Player).Key;
-								if (swap != null)
-								{
-									PerformSwap(swap, ev.Player);
-									ev.ReturnMessage = "Swap successful!";
-									Timing.KillCoroutines(reqCoroutines[swap]);
-									reqCoroutines.Remove(swap);
-									ev.Color = "green";
-									return;
-								}
-								ev.ReturnMessage = "You do not have a swap request.";
-								break;
-							case "no":
-								swap = ongoingReqs.FirstOrDefault(x => x.Value == ev.Player).Key;
-								if (swap != null)
-								{
-									ev.ReturnMessage = "Swap request denied.";
-									swap.ReferenceHub.characterClassManager.TargetConsolePrint(swap.ReferenceHub.scp079PlayerScript.connectionToClient, "Your swap request has been denied.", "red");
-									Timing.KillCoroutines(reqCoroutines[swap]);
-									reqCoroutines.Remove(swap);
-									ongoingReqs.Remove(swap);
-									return;
-								}
-								ev.ReturnMessage = "You do not have a swap reqest.";
-								break;
-							case "cancel":
-								if (ongoingReqs.ContainsKey(ev.Player))
-								{
-									Player dest = ongoingReqs[ev.Player];
-									dest.ReferenceHub.characterClassManager.TargetConsolePrint(dest.ReferenceHub.scp079PlayerScript.connectionToClient, "Your swap request has been cancelled.", "red");
-									Timing.KillCoroutines(reqCoroutines[ev.Player]);
-									reqCoroutines.Remove(ev.Player);
-									ongoingReqs.Remove(ev.Player);
-									ev.ReturnMessage = "You have cancelled your swap request.";
-									return;
-								}
-								ev.ReturnMessage = "You do not have an outgoing swap request.";
-								break;
-							case "list":
-								listBuilder.AppendLine("Here are the available SCPs to swap (Some may be blacklisted):");
-								foreach (KeyValuePair<string, RoleType> kvp in valid)
-								{
-									listBuilder.Append(kvp.Key);
-									listBuilder.Append(" (");
-									listBuilder.Append((int)kvp.Value);
-									listBuilder.AppendLine(")");
-								}
-								string message = listBuilder.ToString();
-								listBuilder.Clear();
-								ev.ReturnMessage = message;
-								break;
-							default:
-								if (!valid.ContainsKey(ev.Arguments[0]))
-								{
-									ev.ReturnMessage = "Invalid SCP.";
-									ev.Color = "red";
-									return;
-								}
-
-								if (ongoingReqs.ContainsKey(ev.Player))
-								{
-									ev.ReturnMessage = "You already have a request pending!";
-									ev.Color = "red";
-									return;
-								}
-
-								RoleType role = valid[ev.Arguments[0]];
-								if (plugin.Config.SwapBlacklist.Contains((int)role))
-								{
-									ev.ReturnMessage = "That SCP is blacklisted.";
-									ev.Color = "red";
-									return;
-								}
-
-								if (ev.Player.Role == role)
-								{
-									ev.ReturnMessage = "You cannot swap with your own role.";
-									ev.Color = "red";
-									return;
-								}
-
-								swap = Player.List.FirstOrDefault(x => role == RoleType.Scp93953 ? x.Role == role || x.Role == RoleType.Scp93989 : x.Role == role);
-								if (swap != null)
-								{
-									reqCoroutines.Add(ev.Player, Timing.RunCoroutine(SendRequest(ev.Player, swap)));
-									ev.ReturnMessage = "Swap request sent!";
-									ev.Color = "green";
-									return;
-								}
-								if (plugin.Config.SwapAllowNewScps)
-								{
-									ev.Player.ReferenceHub.characterClassManager.SetPlayersClass(role, ev.Player.ReferenceHub.gameObject);
-									ev.ReturnMessage = "Could not find a player to swap with, you have been made the specified SCP.";
-									ev.Color = "green";
-									return;
-								}
-								ev.ReturnMessage = "No players found to swap with.";
-								ev.Color = "red";
-								break;
-						}
-						break;
-					default:
-						ev.ReturnMessage = "USAGE: SCPSWAP [SCP NUMBER]";
-						ev.Color = "red";
-						break;
-				}
-			}
 		}
 
 		public void BroadcastMessage()
