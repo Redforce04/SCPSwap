@@ -28,7 +28,18 @@ namespace ScpSwap.Commands.ScpSwapCommand
 
         protected override bool ExecuteParent(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-			if(arguments.Count < 1)
+			if (!EventHandlers.isRoundStarted)
+			{
+				response = "The round hasn't started yet!";
+				return false;
+			}
+
+			if (!EventHandlers.allowSwaps)
+			{
+				response = "SCP swap period has expired.";
+				return false;
+			}
+			if (arguments.Count < 1)
 			{
 				response = "Usage: .scpswap [SCP Number]";
 				return false;
@@ -43,6 +54,12 @@ namespace ScpSwap.Commands.ScpSwapCommand
 			if (EventHandlers.ongoingReqs.ContainsKey(ply))
 			{
 				response = "You already have a request pending!";
+				return false;
+			}
+
+			if (!(ply.Team == Team.SCP))
+			{
+				response = "You're not an SCP, why did you think that would work.";
 				return false;
 			}
 
