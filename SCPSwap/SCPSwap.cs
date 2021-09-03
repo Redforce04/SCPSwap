@@ -8,9 +8,9 @@ namespace ScpSwap
 	{
 		public EventHandlers Handler { get; private set; }
 		public override string Name => nameof(ScpSwap);
-		public override string Author => "Originally written by Cyanox, modifications by KoukoCocoa & Thomasjosif";
-		public override Version Version { get; } = new Version(1, 3, 2);
-		public override Version RequiredExiledVersion { get; } = new Version(2, 1, 29, 0);
+		public override string Author => "Originally written by Cyanox, modifications by KoukoCocoa & Thomasjosif, updated to Exiled 3.0.0 by Redforce04";
+		public override Version Version { get; } = new Version(1, 4, 0);
+		public override Version RequiredExiledVersion { get; } = new Version(3, 0, 0);
 
 		public ScpSwap() { }
 
@@ -21,7 +21,6 @@ namespace ScpSwap
 			Handlers.Server.RoundStarted += Handler.OnRoundStart;
 			Handlers.Server.RoundEnded += Handler.OnRoundEnd;
 			Handlers.Server.RestartingRound += Handler.OnRoundRestart;
-			Handlers.Server.SendingConsoleCommand += Handler.OnConsoleCommand;
 		}
 
 		public override void OnDisabled()
@@ -30,7 +29,6 @@ namespace ScpSwap
 			Handlers.Server.RoundStarted -= Handler.OnRoundStart;
 			Handlers.Server.RoundEnded -= Handler.OnRoundEnd;
 			Handlers.Server.RestartingRound -= Handler.OnRoundRestart;
-			Handlers.Server.SendingConsoleCommand -= Handler.OnConsoleCommand;
 			Handler = null;
 		}
 

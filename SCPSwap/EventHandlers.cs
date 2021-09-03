@@ -130,10 +130,7 @@ namespace ScpSwap
 			allowSwaps = false;
 		}
 
-		public void OnConsoleCommand(SendingConsoleCommandEventArgs ev)
-		{
-
-		}
+		
 
 		public void BroadcastMessage()
 		{
